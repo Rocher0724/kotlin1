@@ -1,79 +1,118 @@
 package one.kotlin.choongyul.kotlintest
 
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
-import android.widget.Button
+import android.view.View.GONE
+import android.view.View.VISIBLE
+import android.widget.*
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import kotlinx.android.synthetic.main.activity_main.*
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.auth.FirebaseAuth
+import com.google.android.gms.auth.api.Auth
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInResult
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.auth.AuthResult
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.FirebaseUser
 
 
 
 
+class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedListener {
+    override fun onConnectionFailed(p0: ConnectionResult) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
-class MainActivity : AppCompatActivity() {
+//    lateinit var inputEmail: EditText
+//    lateinit var tv: TextView
+//    lateinit var inputPassword: EditText
+//    lateinit var btnSignIn: Button
+//    lateinit var btnSignUp: Button
+//    lateinit var btnResetPassword: Button
+//    lateinit var progressBar: ProgressBar
+//    lateinit var googleSignIn: Button
+//
+    lateinit var mAuth: FirebaseAuth
 
-    val animals: ArrayList<String> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        addAnimal()
-
-        val lm = LinearLayoutManager(this)
-        mRecycler.layoutManager = lm
-        val mAdapter = AnimalAdapter(animals)
-        mRecycler.adapter = mAdapter
-
-//        val database = FirebaseDatabase.getInstance()
-//        val myRef = database.getReference("message")
-
-//        myRef.setValue("Hello, World!")
-
+        mAuth = FirebaseAuth.getInstance()
+//
+//        tv = findViewById (R.id.tv1)
+//        btnSignIn = findViewById (R.id.btnSignIn)
+//        btnSignUp = findViewById (R.id.btnSignUp)
+//        inputEmail = findViewById (R.id.etEmail)
+//        inputPassword = findViewById (R.id.etPassword)
+//        progressBar = findViewById (R.id.progressBar)
+//        btnResetPassword = findViewById (R.id.btnReset)
+//        googleSignIn = findViewById (R.id.btnGoogle)
 
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build()
-        var mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+
+        val mGoogleApiClient = GoogleApiClient.Builder(this)
+                .enableAutoManage(this,this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build()
+
+        btnGoogle.setOnClickListener {
+            progressBar.visibility = VISIBLE
+            val signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient)
+            startActivityForResult(signInIntent, 100)
+        }
 
     }
 
-    private fun addAnimal() {
-        animals.add("dog")
-        animals.add("cat")
-        animals.add("owl")
-        animals.add("cheetah")
-        animals.add("raccoon")
-        animals.add("bird")
-        animals.add("snake")
-        animals.add("lizard")
-        animals.add("hamster")
-        animals.add("bear")
-        animals.add("lion")
-        animals.add("tiger")
-        animals.add("horse")
-        animals.add("frog")
-        animals.add("fish")
-        animals.add("shark")
-        animals.add("turtle")
-        animals.add("elephant")
-        animals.add("cow")
-        animals.add("beaver")
-        animals.add("bison")
-        animals.add("porcupine")
-        animals.add("rat")
-        animals.add("mouse")
-        animals.add("goose")
-        animals.add("deer")
-        animals.add("fox")
-        animals.add("moose")
-        animals.add("buffalo")
-        animals.add("monkey")
-        animals.add("penguin")
-        animals.add("parrot")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 100) {
+            progressBar.visibility = GONE
+
+            val result = Auth.GoogleSignInApi.getSignInResultFromIntent(data)
+            if (result.isSuccess) {
+                val account = result.signInAccount
+                if (account != null) {
+                    firebaseAuthWithGoogle(account)
+                }
+            }
+        }
     }
+
+    fun firebaseAuthWithGoogle (acct : GoogleSignInAccount) {
+        val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener {
+                    if (it.isSuccessful) {
+                        val user = mAuth.currentUser
+                        val name = user!!.displayName
+                        val email = user!!.email
+                        tv1.text = name + " " + email
+                        Toast.makeText(applicationContext, "google signin success", Toast.LENGTH_SHORT).show()
+
+                    } else {
+                        Toast.makeText(applicationContext, "Authentication failed", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+    }
+
+//    public override fun onStart() {
+//        super.onStart()
+//        // Check if user is signed in (non-null) and update UI accordingly.
+//        val currentUser = mAuth.currentUser
+////        updateUI(currentUser)
+//    }
 }
