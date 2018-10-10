@@ -24,39 +24,15 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.FirebaseUser
 
 
-
-
 class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedListener {
-    override fun onConnectionFailed(p0: ConnectionResult) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
 
-//    lateinit var inputEmail: EditText
-//    lateinit var tv: TextView
-//    lateinit var inputPassword: EditText
-//    lateinit var btnSignIn: Button
-//    lateinit var btnSignUp: Button
-//    lateinit var btnResetPassword: Button
-//    lateinit var progressBar: ProgressBar
-//    lateinit var googleSignIn: Button
-//
     lateinit var mAuth: FirebaseAuth
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         mAuth = FirebaseAuth.getInstance()
-//
-//        tv = findViewById (R.id.tv1)
-//        btnSignIn = findViewById (R.id.btnSignIn)
-//        btnSignUp = findViewById (R.id.btnSignUp)
-//        inputEmail = findViewById (R.id.etEmail)
-//        inputPassword = findViewById (R.id.etPassword)
-//        progressBar = findViewById (R.id.progressBar)
-//        btnResetPassword = findViewById (R.id.btnReset)
-//        googleSignIn = findViewById (R.id.btnGoogle)
 
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
@@ -99,8 +75,14 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
                         val user = mAuth.currentUser
                         val name = user!!.displayName
                         val email = user!!.email
-                        tv1.text = name + " " + email
+
                         Toast.makeText(applicationContext, "google signin success", Toast.LENGTH_SHORT).show()
+
+                        val chatIntent = Intent(this, ChatActivity::class.java)
+                        chatIntent.putExtra("user", user)
+                        chatIntent.putExtra("name", name)
+                        chatIntent.putExtra("email", email)
+                        startActivity(chatIntent)
 
                     } else {
                         Toast.makeText(applicationContext, "Authentication failed", Toast.LENGTH_SHORT).show()
@@ -115,4 +97,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
 //        val currentUser = mAuth.currentUser
 ////        updateUI(currentUser)
 //    }
+
+    override fun onConnectionFailed(p0: ConnectionResult) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 }
